@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -10,17 +10,15 @@ import PrivateRoute from './components/PrivateRoute';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/track/:linkId" element={<Tracking />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/track/:linkId" element={<Tracking />} />
+      </Routes>
+    </AuthProvider>
   );
 };
 
