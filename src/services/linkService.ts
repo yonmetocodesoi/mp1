@@ -1,4 +1,4 @@
-import { ref, push, set, onValue, query, orderByChild } from 'firebase/database';
+import { ref, push, set, onValue, query, orderByChild, equalTo } from 'firebase/database';
 import { database } from './firebase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,6 +21,10 @@ interface LinkAccess {
 }
 
 export const generateLink = async (userId: string) => {
+  if (!userId) {
+    throw new Error('User must be authenticated to generate links');
+  }
+
   const uniqueId = uuidv4();
   const linkId = `${uniqueId}_${userId}`;
   const linkRef = ref(database, `links/${linkId}`);
@@ -31,8 +35,13 @@ export const generateLink = async (userId: string) => {
     url: `${window.location.origin}/track/${linkId}`
   };
   
-  await set(linkRef, linkData);
-  return linkData.url;
+  try {
+    await set(linkRef, linkData);
+    return linkData.url;
+  } catch (error) {
+    console.error('Error generating link:', error);
+    throw error;
+  }
 };
 
 export const trackLinkAccess = async (linkId: string, accessData: Omit<LinkAccess, 'linkId' | 'timestamp'>) => {
@@ -46,11 +55,16 @@ export const trackLinkAccess = async (linkId: string, accessData: Omit<LinkAcces
 };
 
 export const getLinkAccesses = (userId: string, callback: (data: LinkAccess[]) => void) => {
-  // First get all links owned by the user
+  if (!userId) {
+    callback([]);
+    return;
+  }
+
+  // Query links owned by the user
   const userLinksRef = query(
     ref(database, 'links'),
     orderByChild('userId'),
-    // Equal to userId
+    equalTo(userId)
   );
   
   onValue(userLinksRef, (snapshot) => {
